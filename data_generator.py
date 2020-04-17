@@ -6,8 +6,11 @@ dir_name = "data"
 filename = "data"
 path = os.path.join(os.getcwd(), dir_name)
 
-num_of_coefs = 10
-num_of_x = 50
+num_of_coefs = 25
+num_of_x = 500
+
+lower = -1
+upper = 1
 
 
 def main():
@@ -31,7 +34,7 @@ def generate_data():
 
     for i in range(num_of_coefs):
         if random.randint(1, 10) > 2:
-            c = random.uniform(-0.0000001, 0.0000001)
+            c = random.uniform(lower, upper)
             c = round(c, 10)
         else:
             c = None

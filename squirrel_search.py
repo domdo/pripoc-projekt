@@ -187,13 +187,12 @@ def set_best_squirrels():
 
 
 def fitness(data, FS):
-    y_sum_test = data
-    y_sum = 0
+    y_diff_sum = 0
 
-    for x in data['x']:
-        y_sum += polynomial_calc(FS.pos, x)
+    for i in range(len(data['x'])):
+        y_diff_sum += math.fabs(polynomial_calc(FS.pos, data['x'][i]) - data['y'][i])
 
-    fit = y_sum_test - y_sum  # difference between test and flying squirrel
+    fit = y_diff_sum  # difference between test and flying squirrels
     return fit
 
 
