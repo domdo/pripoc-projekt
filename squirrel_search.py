@@ -1,6 +1,7 @@
 import math
 import random
 import sys
+from scipy.stats import truncnorm
 from polynomial_calculator import polynomial_calc
 
 
@@ -35,7 +36,7 @@ class Variables(object):
 var = Variables()  # holding all variables
 
 
-def squirrel_search(fitness_func, fitness_data ,num_of_agents=50, num_of_iters=50, num_of_dims=10, FS_l = -0.1,
+def squirrel_search(fitness_func, fitness_data=None, num_of_agents=50, num_of_iters=50, num_of_dims=10, FS_l = -0.1,
                     FS_u = 0.1, FS_nt_to_at = 0.05):
     global var
     var.num_of_dimensions = num_of_dims
@@ -56,14 +57,13 @@ def squirrel_search(fitness_func, fitness_data ,num_of_agents=50, num_of_iters=5
             # squirrels on normal trees moving towards acorn nut tree
             if random.uniform(0, 1) >= var.FS_nt_to_at:
                 if random.uniform(0, 1) >= var.P_dp:
-                    at_i = random.randint(3)
+                    at_i = random.randint(0, 2)
                     for j in range(num_of_dims):
                         FS_nt_i.pos[j] = FS_nt_i.pos[j] + var.d_g * var.G_c * (var.FS_at[at_i].pos[j] - FS_nt_i.pos[j])  # eq.5ab
                 else:
                     FS_nt_i.pos = random_location()
 
                 FS_nt_i.fit = fitness_func(fitness_data, FS_nt_i)
-                assess_fitness(FS_nt_i)
             # squirrels on normal trees moving towards hickory nut tree
             else:
                 if random.uniform(0, 1) >= var.P_dp:
@@ -73,7 +73,6 @@ def squirrel_search(fitness_func, fitness_data ,num_of_agents=50, num_of_iters=5
                     FS_nt_i.pos = random_location()
 
                 FS_nt_i.fit = fitness_func(fitness_data, FS_nt_i)
-                assess_fitness(FS_nt_i)
 
         # squirrels on acorn trees moving towards hickory nut tree
         for FS_at_i in var.FS_at:
@@ -84,7 +83,6 @@ def squirrel_search(fitness_func, fitness_data ,num_of_agents=50, num_of_iters=5
                 FS_at_i.pos = random_location()
 
             FS_at_i.fit = fitness_func(fitness_data, FS_at_i)
-            assess_fitness(FS_at_i)
 
         # calculate seasonal constant
         S_c_part = 0
@@ -107,6 +105,11 @@ def squirrel_search(fitness_func, fitness_data ,num_of_agents=50, num_of_iters=5
                 if FS_nt_i == var.FS_ht:
                     continue
                 FS_nt_i.pos = levy_relocation()
+                FS_nt_i.fit = fitness_func(fitness_data, FS_nt_i)
+
+        set_best_squirrels()
+
+    return var.FS_ht
 
 
 def init(fitness_func, fitness_data):
@@ -124,8 +127,9 @@ def init(fitness_func, fitness_data):
         FS_i = FlyingSquirrel()
         FS_i.pos = random_location()
         FS_i.fit = fitness_func(fitness_data, FS_i)
-        assess_fitness(FS_i)
         var.FS.append(FS_i)
+
+    set_best_squirrels()
 
 
 def random_location():
@@ -155,27 +159,28 @@ def levy():
     sigma_denom = math.gamma((1+beta)/2) * beta * 2**((beta-1)/2)
     sigma = (sigma_num / sigma_denom)**(1/beta)
 
-    r_a = math.gauss(0, 1)
-    r_b = math.gauss(0, 1)
+    generator = get_truncated_normal()
+    r_a = generator.rvs()
+    r_b = generator.rvs()
 
     l = 0.01 * (r_a * sigma) / (math.fabs(r_b**(1/beta)))  # eq.16
     return l
 
 
-def assess_fitness(FS):
+# function from stackoverflow
+# https://stackoverflow.com/questions/36894191/how-to-get-a-normal-distribution-within-a-range-in-numpy
+def get_truncated_normal(mean=0, sd=1, low=0, upp=1):
+    return truncnorm((low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
+
+
+def set_best_squirrels():
     global var
+    var.FS.sort(key=lambda x: x.fit)
 
-    if FS.fit < var.FS_ht.fit:  # if best fitness
-        var.FS_ht = FS
-
-    elif var.FS_at[0].fit > FS.fit >= var.FS_ht.fit:  # if second best
-        var.FS_at[0] = FS
-
-    elif var.FS_at[1].fit > FS.fit >= var.FS_at[0].fit:  # if third best
-        var.FS_at[1] = FS
-
-    elif var.FS_at[2].fit > FS.fit >= var.FS_at[1].fit:  # if fourth best
-        var.FS_at[2] = FS
+    var.FS_ht = var.FS[0]
+    var.FS_at[0] = var.FS[1]
+    var.FS_at[1] = var.FS[2]
+    var.FS_at[2] = var.FS[3]
 
 
 def fitness(data, FS):
