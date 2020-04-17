@@ -11,6 +11,7 @@ def fitness(data, FS):
 
 
 for i in range(10):
-    res = squirrel_search(fitness, num_of_agents=10, num_of_iters=1000, num_of_dims=2, FS_l=-5.12, FS_u=5.12)
+    res, evol = squirrel_search(fitness, num_of_agents=10, num_of_iters=1000, num_of_dims=2, FS_l=-5.12, FS_u=5.12)
     print(res.pos, res.fit)
+    #print(evol)
     print()

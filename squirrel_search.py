@@ -44,10 +44,13 @@ def squirrel_search(fitness_func, fitness_data=None, num_of_agents=50, num_of_it
     var.FS_l = FS_l
     var.FS_u = FS_u
     var.FS_nt_to_at = FS_nt_to_at
+    FS_ht_evolution = []
 
     init(fitness_func, fitness_data)
 
     for i in range(num_of_iters):
+        FS_ht_evolution.append(var.FS_ht.fit)  # add best squirrel (for showing evolution in time)
+
         # squirrels on normal trees
         for FS_nt_i in var.FS:
             # skip squirrels on other than normal tree
@@ -109,7 +112,7 @@ def squirrel_search(fitness_func, fitness_data=None, num_of_agents=50, num_of_it
 
         set_best_squirrels()
 
-    return var.FS_ht
+    return var.FS_ht, FS_ht_evolution
 
 
 def init(fitness_func, fitness_data):
