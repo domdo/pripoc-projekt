@@ -6,6 +6,7 @@ path = os.path.join(os.getcwd(), dir_name)
 
 
 def main():
+    # calculate every file in specified directory
     for filename in os.listdir(path):
         file = os.path.join(path, filename)
         with open(file, 'r+') as f:
